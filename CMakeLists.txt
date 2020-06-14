@@ -7,4 +7,5 @@ project(EarthWalkers)
 #   "c:/Users/phi/Downloads/SFML-2.5.1-windows-vc15-64-bit/SFML-2.5.1/lib")
 
 add_executable(EarthWalkers
+  Noise.c
   main.c)
