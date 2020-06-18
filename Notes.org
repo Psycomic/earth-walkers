@@ -1,0 +1,25 @@
+* Earth Walkers
+
+** TODO The physics engine
+
+   This is probably the longest component to create.
+
+   To do:
+   + Convex collision detection
+   + Terrain collision detection
+   + Collision response and physics
+
+
+*** The representation of a convex shape
+
+    The shape will be represented as all the vertices and the normal vectors of
+    the faces.
+
+    Example of a cube :
+
+    #+BEGIN_SRC c
+    Vector3 vertices[] = {
+      {-1.f, -1.f, -1.f},
+      ...
+    };
+    #+END_SRC

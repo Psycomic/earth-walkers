@@ -22,7 +22,7 @@ float random_uniform(float min, float max) {
   return min + (max - min) * random_float();
 }
 
-void gradient_initialize(float* gradient, uint size) {
+void noise_gradient_initialize(float* gradient, uint size) {
   for (size_t i = 0; i < size; i += 2){
     gradient[i] = random_uniform(-1.f, 1.f);
     gradient[i + 1] = random_uniform(-1.f, 1.f);
@@ -37,7 +37,7 @@ float dot_grid_gradient(float* gradient, uint size, int ix, int iy, float x, flo
 	  dy * gradient[index(ix, iy, 1, size)]);
 }
 
-float perlin(float* gradient, uint size, float x, float y) {
+float noise_perlin(float* gradient, uint size, float x, float y) {
     int x0 = (int)x;
     int x1 = x0 + 1;
     int y0 = (int)y;
@@ -60,14 +60,15 @@ float perlin(float* gradient, uint size, float x, float y) {
     return value;
 }
 
-float octaves_height(float* octaves, uint size, float x, float y, float frequency, float amplitude){
+float noise_octaves_height(float* octaves, uint size,
+			   float x, float y, float frequency, float amplitude){
   float final_height = 0.f;
 
   for (uint i = 0; i < size; i++){
     float scale = powf(frequency, (float) i);
     float importance = powf(amplitude, (float) i);
 
-    final_height += perlin(octaves + i, size, x * scale, y * scale) * importance;
+    final_height += noise_perlin(octaves + i, size, x * scale, y * scale) * importance;
   }
 
   return final_height;

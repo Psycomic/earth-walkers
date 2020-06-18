@@ -1,11 +1,16 @@
 project(EarthWalkers)
 
-# include_directories("C:\Users\phi\box2d\include"
-#   "C:/Users/phi/Downloads/SFML-2.5.1-windows-vc15-64-bit/SFML-2.5.1/include")
-
-# link_directories("C:\Users\phi\box2d\build\src\Debug"
-#   "c:/Users/phi/Downloads/SFML-2.5.1-windows-vc15-64-bit/SFML-2.5.1/lib")
+include_directories(
+  "C:/Users/phi/Downloads/glew-2.1.0/include"
+  "C:/Users/phi/Downloads/glfw-3.3.2.bin.WIN64/include")
+link_directories(
+  "C:/Users/phi/Downloads/glew-2.1.0/lib/Release/x64"
+  "c:/Users/phi/Downloads/glfw-3.3.2.bin.WIN64/lib-vc2019")
 
 add_executable(EarthWalkers
-  Noise.c
+  noise.c
+  linear_algebra.c
+  render.c
   main.c)
+
+target_link_libraries(EarthWalkers PRIVATE opengl32 glew32 glfw3)
