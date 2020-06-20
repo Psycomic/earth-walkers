@@ -39,6 +39,10 @@ void mat4_create_translation(Mat4 destination, Vector3 direction);
 void mat4_create_scale(Mat4 destination, Vector3 scale);
 void mat4_create_perspective(Mat4 destination, float far, float near);
 
+void mat4_create_rotation_x(Mat4 destination, float angle);
+void mat4_create_rotation_y(Mat4 destination, float angle);
+void mat4_create_rotation_z(Mat4 destination, float angle);
+
 void mat4_mat4_mul(Mat4 destination, Mat4 a, Mat4 b);
 void mat4_vector4_mul(Vector4* destination, Vector4 v, Mat4 mat);
 void mat4_print(Mat4 m);

@@ -2,6 +2,9 @@
 #include <stdlib.h>
 
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+#include "linear_algebra.h"
 
 int read_file(char* buffer, const char* filename) {
   FILE* file = fopen(filename, "r");
@@ -104,4 +107,41 @@ GLuint load_shaders(const char* vertex_file_path, const char* fragment_file_path
 	glDeleteShader(FragmentShaderID);
 
 	return ProgramID;
+}
+
+int initialize_glfw() {
+  glewExperimental = 1;
+
+  if(!glfwInit()){
+    fprintf(stderr, "GLFW not initialized correctly !\n");
+    return -1;
+  }
+
+  glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL
+
+  return 0;
+}
+
+void camera_create_rotation_matrix(Mat4 destination, float rx, float ry) {
+  float rotation_matrix_x[16];
+  float rotation_matrix_y[16];
+
+  mat4_create_rotation_x(rotation_matrix_x, rx);
+  mat4_create_rotation_y(rotation_matrix_y, ry);
+
+  mat4_mat4_mul(destination, rotation_matrix_y, rotation_matrix_x); /* First, Y rotation, after X rotation */
+}
+
+void camera_create_final_matrix(Mat4 destination, Mat4 perspective, Mat4 rotation, Vector3 position) {
+  float translation_matrix[16];
+  float temporary_matrix[16];
+
+  mat4_create_translation(translation_matrix, position);
+
+  mat4_mat4_mul(temporary_matrix, translation_matrix, rotation);
+  mat4_mat4_mul(destination, temporary_matrix, perspective);
 }

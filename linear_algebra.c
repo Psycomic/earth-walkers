@@ -82,6 +82,57 @@ void mat4_create_perspective(Mat4 destination, float far, float near){
   destination[14] = -(far * near) / (far - near);
 }
 
+void mat4_create_rotation_x(Mat4 destination, float angle){
+  for (uint i = 0; i < 4; ++i) {
+    for (uint j = 0; j < 4; ++j) {
+      if (i == j)
+	destination[j + i * 4] = 1;
+      else
+	destination[j + i * 4] = 0;
+    }
+  }
+
+  destination[5] = cosf(angle);
+  destination[6] = sinf(angle);
+
+  destination[9] = -sinf(angle);
+  destination[10] = cosf(angle);
+}
+
+void mat4_create_rotation_y(Mat4 destination, float angle){
+  for (uint i = 0; i < 4; ++i) {
+    for (uint j = 0; j < 4; ++j) {
+      if (i == j)
+	destination[j + i * 4] = 1;
+      else
+	destination[j + i * 4] = 0;
+    }
+  }
+
+  destination[0] = cosf(angle);
+  destination[2] = sinf(angle);
+
+  destination[8] = -sinf(angle);
+  destination[10] = cosf(angle);
+}
+
+void mat4_create_rotation_z(Mat4 destination, float angle){
+  for (uint i = 0; i < 4; ++i) {
+    for (uint j = 0; j < 4; ++j) {
+      if (i == j)
+	destination[j + i * 4] = 1;
+      else
+	destination[j + i * 4] = 0;
+    }
+  }
+
+  destination[0] = cosf(angle);
+  destination[1] = sinf(angle);
+
+  destination[4] = -sinf(angle);
+  destination[5] = cosf(angle);
+}
+
 void mat4_vector4_mul(Vector4* destination, Vector4 v, Mat4 mat) {
   for (uint i = 0; i < 4; ++i) {
     destination->D[i] = 0.f;
