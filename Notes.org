@@ -1,5 +1,9 @@
 * Earth Walkers
 
+** Rendering
+
+   I used opengl to create a debug draw of the scene.
+
 ** TODO The physics engine
 
    This is probably the longest component to create.

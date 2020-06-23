@@ -39,7 +39,7 @@ float vector3_dot(Vector3 a, Vector3 b) {
 }
 
 Mat4 mat4_allocate() {
-  Mat4 mat = (Mat4)malloc(sizeof(float) * 16);
+  Mat4 mat = malloc(sizeof(float) * 16);
   return mat;
 }
 
@@ -165,26 +165,6 @@ void mat4_print(Mat4 m) {
   }
 }
 
-void rectangle_vertices_create(Vector3* vertices, Vector3 min, Vector3 max) {
-  float width = max.x - min.x;
-  float height = max.y - min.y;
-
-  vertices[0] = min;
-
-  vertices[1].y = max.y - height;
-  vertices[1].x = max.x;
-  vertices[1].z = max.z;
-
-  vertices[2] = max;
-
-  vertices[3] = min;
-  vertices[4] = max;
-
-  vertices[5].x = max.x - width;
-  vertices[5].y = max.y;
-  vertices[5].z = min.z;
-}
-
 void triangle_normal_from_vertices(Vector3* n, Vector3 A, Vector3 B, Vector3 C) {
   Vector3 triangle_edge1;
   Vector3 triangle_edge2;
@@ -225,33 +205,4 @@ bool convex_shape_point_collide(ConvexShape* shape, Vector3 point) {
   }
 
   return 1;
-}
-
-void vertices_create_box(Vector3* vertices, float hx, float hy, float hz) {
-  Vector3 points[] = {
-		      {-hx, -hy, -hz}, /* Back of the cube */
-		      {hx, hy, -hz},
-
-		      {-hx, -hy, hz}, /* Front of the cube */
-		      {hx, hy, hz},
-
-		      {-hx, -hy, -hz}, /* Left side */
-		      {-hx, hy, hz},
-
-		      {hx, -hy, -hz}, /* Right side */
-		      {hx, hy, hz},
-
-		      {-hx, -hy, -hz}, /* Top */
-		      {hx, -hy, hz},
-
-		      {-hx, hy, -hz}, /* Bottom */
-		      {hx, hy, hz},
-  };
-
-  for (uint i = 0; i < 36; i += 6) {
-    uint side_index = i / 6;
-
-    rectangle_vertices_create(vertices + i, points[side_index * 2],
-			      points[side_index * 2 + 1]);
-  }
 }

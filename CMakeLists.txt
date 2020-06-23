@@ -11,6 +11,8 @@ add_executable(EarthWalkers
   noise.c
   linear_algebra.c
   render.c
+  game.c
+  misc.c
   main.c)
 
 target_link_libraries(EarthWalkers PRIVATE opengl32 glew32 glfw3)

@@ -47,9 +47,6 @@ void mat4_mat4_mul(Mat4 destination, Mat4 a, Mat4 b);
 void mat4_vector4_mul(Vector4* destination, Vector4 v, Mat4 mat);
 void mat4_print(Mat4 m);
 
-void rectangle_vertices_create(Vector3* vertices, Vector3 min, Vector3 max);
-void vertices_create_box(Vector3* vertices, float hx, float hy, float hz);
-
 void triangle_normal_from_vertices(Vector3* n, Vector3 A, Vector3 B, Vector3 C);
 bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p);
 

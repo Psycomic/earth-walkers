@@ -1,41 +1,114 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "render.h"
+#include "linear_algebra.h"
+#include "misc.h"
 
-#define MOUSE_SENSIBILLITY 0.01
-#define CAMERA_SPEED 0.1f
+extern float camera_final_matrix[16];
 
-double last_xpos = -1.0, last_ypos = -1.0;
+void game_init();
+void game_loop();
+void game_handle_events(GLFWwindow* window);
 
 int main()
 {
-  float camera_perspective_matrix[16];
-  float camera_rotation_matrix[16];
-  float camera_final_matrix[16];
+  game_init();
 
-  mat4_create_perspective(camera_perspective_matrix, 100.f, 0.f);
+  float cube_color[] = {
+			0.583f,  0.771f,  0.014f,
+			0.609f,  0.115f,  0.436f,
+			0.327f,  0.483f,  0.844f,
+			0.822f,  0.569f,  0.201f,
+			0.435f,  0.602f,  0.223f,
+			0.310f,  0.747f,  0.185f,
+			0.597f,  0.770f,  0.761f,
+			0.559f,  0.436f,  0.730f,
+			0.359f,  0.583f,  0.152f,
+			0.483f,  0.596f,  0.789f,
+			0.559f,  0.861f,  0.639f,
+			0.195f,  0.548f,  0.859f,
+			0.014f,  0.184f,  0.576f,
+			0.771f,  0.328f,  0.970f,
+			0.406f,  0.615f,  0.116f,
+			0.676f,  0.977f,  0.133f,
+			0.971f,  0.572f,  0.833f,
+			0.140f,  0.616f,  0.489f,
+			0.997f,  0.513f,  0.064f,
+			0.945f,  0.719f,  0.592f,
+			0.543f,  0.021f,  0.978f,
+			0.279f,  0.317f,  0.505f,
+			0.167f,  0.620f,  0.077f,
+			0.347f,  0.857f,  0.137f,
+			0.055f,  0.953f,  0.042f,
+			0.714f,  0.505f,  0.345f,
+			0.783f,  0.290f,  0.734f,
+			0.722f,  0.645f,  0.174f,
+			0.302f,  0.455f,  0.848f,
+			0.225f,  0.587f,  0.040f,
+			0.517f,  0.713f,  0.338f,
+			0.053f,  0.959f,  0.120f,
+			0.393f,  0.621f,  0.362f,
+			0.673f,  0.211f,  0.457f,
+			0.820f,  0.883f,  0.371f,
+			0.982f,  0.099f,  0.879f
+  };
 
-  Vector3 camera_position = {0.f, 0.3f, -4.f};
-  float camera_rx = 0.f, camera_ry = 0.f;
+  float cube_vertices[] = {
+			   -1.0f,-1.0f,-1.0f, // triangle 1 : begin
+			   -1.0f,-1.0f, 1.0f,
+			   -1.0f, 1.0f, 1.0f, // triangle 1 : end
+			   1.0f, 1.0f,-1.0f, // triangle 2 : begin
+			   -1.0f,-1.0f,-1.0f,
+			   -1.0f, 1.0f,-1.0f, // triangle 2 : end
+			   1.0f,-1.0f, 1.0f,
+			   -1.0f,-1.0f,-1.0f,
+			   1.0f,-1.0f,-1.0f,
+			   1.0f, 1.0f,-1.0f,
+			   1.0f,-1.0f,-1.0f,
+			   -1.0f,-1.0f,-1.0f,
+			   -1.0f,-1.0f,-1.0f,
+			   -1.0f, 1.0f, 1.0f,
+			   -1.0f, 1.0f,-1.0f,
+			   1.0f,-1.0f, 1.0f,
+			   -1.0f,-1.0f, 1.0f,
+			   -1.0f,-1.0f,-1.0f,
+			   -1.0f, 1.0f, 1.0f,
+			   -1.0f,-1.0f, 1.0f,
+			   1.0f,-1.0f, 1.0f,
+			   1.0f, 1.0f, 1.0f,
+			   1.0f,-1.0f,-1.0f,
+			   1.0f, 1.0f,-1.0f,
+			   1.0f,-1.0f,-1.0f,
+			   1.0f, 1.0f, 1.0f,
+			   1.0f,-1.0f, 1.0f,
+			   1.0f, 1.0f, 1.0f,
+			   1.0f, 1.0f,-1.0f,
+			   -1.0f, 1.0f,-1.0f,
+			   1.0f, 1.0f, 1.0f,
+			   -1.0f, 1.0f,-1.0f,
+			   -1.0f, 1.0f, 1.0f,
+			   1.0f, 1.0f, 1.0f,
+			   -1.0f, 1.0f, 1.0f,
+			   1.0f,-1.0f, 1.0f
+  };
 
-  Vector4 camera_orientation = {0.f, 0.f, 1.f, 0.f};
-
-  Vector3 cube_vertices[36];
-  vertices_create_box(cube_vertices, 1.f, 1.f, 1.f);
-
-  uint vertices_number = sizeof(cube_vertices) / sizeof(Vector3);
+  uint vertices_number = sizeof(cube_vertices) / sizeof(float);
 
   /* Initialize GLFW and the opengl context */
-  if(initialize_glfw() == -1) {
-    fprintf( stderr, "Failed to initialize glfw" );
+  glewExperimental = 1;
 
+  if(!glfwInit()){
+    fprintf(stderr, "GLFW not initialized correctly !\n");
     return -1;
   }
+
+  glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL
 
   GLFWwindow* window;
   window = glfwCreateWindow(800, 800, "Tutorial 01", NULL, NULL);
@@ -48,14 +121,16 @@ int main()
   }
 
   glfwMakeContextCurrent(window);
-  glewExperimental = 1;
 
   if (glewInit() != GLEW_OK) {
     fprintf(stderr, "Failed to initialize GLEW\n");
     return -1;
   }
 
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
   /* Initialize the triangle and the shaders */
+
   GLuint VertexArrayID;
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
@@ -65,65 +140,46 @@ int main()
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
 
+  GLuint colorbuffer;
+  glGenBuffers(1, &colorbuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(cube_color), cube_color, GL_STATIC_DRAW);
+
   GLuint programID = load_shaders("./shaders/vertex_shader_test.glsl", "./shaders/fragment_shader_test.glsl");
-  glUseProgram(programID);
 
   GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
   while(!glfwWindowShouldClose(window)) {
-    /* Updating camera position */
-    camera_create_rotation_matrix(camera_rotation_matrix, camera_rx, camera_ry);
-    camera_create_final_matrix(camera_final_matrix, camera_perspective_matrix,
-			       camera_rotation_matrix, camera_position);
+    game_loop();
 
-    /* Calculating the forward vector */
-    Vector4 camera_direction_vec4;
-    mat4_vector4_mul(&camera_direction_vec4, camera_orientation, camera_rotation_matrix);
-
-    Vector3 camera_direction;
-    camera_direction = *((Vector3*) &camera_direction_vec4);
-
-    vector3_scalar_mul(&camera_direction, camera_direction, CAMERA_SPEED);
+    glUseProgram(programID);
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, camera_final_matrix);
 
     /* Drawing the triangles */
+    glClearColor(1.0, 1.0, 1.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, camera_final_matrix);
+    glUseProgram(programID);
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
     glDrawArrays(GL_TRIANGLES, 0, vertices_number);
+
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
 
     glfwSwapBuffers(window);
     glfwPollEvents();
 
-    /* Handling user input */
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-      glfwSetWindowShouldClose(window, GL_TRUE);
-
-    if (glfwGetKey(window, GLFW_KEY_W))
-      vector3_add(&camera_position, camera_position, camera_direction);
-    if (glfwGetKey(window, GLFW_KEY_S))
-      vector3_sub(&camera_position, camera_position, camera_direction);
-
-
-    double xpos, ypos;
-    glfwGetCursorPos(window, &xpos, &ypos);
-
-    if(last_xpos == -1.0 || last_ypos == -1.0){
-      last_xpos = xpos;
-      last_ypos = ypos;
-    }
-
-    camera_rx += (ypos - last_ypos) * MOUSE_SENSIBILLITY;
-    camera_ry -= (xpos - last_xpos) * MOUSE_SENSIBILLITY;
-
-    last_xpos = xpos;
-    last_ypos = ypos;
+    game_handle_events(window);
   }
 
+  glfwTerminate();
   return 0;
 }
