@@ -188,7 +188,7 @@ void convex_shape_create(ConvexShape* shape, Vector3* vertices, uint vertices_si
   shape->vertices = vertices;
   shape->vertices_size = vertices_size;
 
-  shape->normals = (Vector3*) malloc(sizeof(Vector3) * (vertices_size / 3));
+  shape->normals = malloc(sizeof(Vector3) * (vertices_size / 3));
 
   uint i = 0;
   for (i = 0; i < vertices_size; i += 3) {

@@ -1,3 +1,6 @@
+#ifndef LINEAR_ALGEBRA_HEADER
+#define LINEAR_ALGEBRA_HEADER
+
 typedef unsigned int uint;
 typedef unsigned char bool;
 
@@ -52,3 +55,5 @@ bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p);
 
 void convex_shape_create(ConvexShape* shape, Vector3* vertices, uint vertices_size);
 bool convex_shape_point_collide(ConvexShape* shape, Vector3 point);
+
+#endif
