@@ -143,6 +143,19 @@ void mat4_vector4_mul(Vector4* destination, Vector4 v, Mat4 mat) {
   }
 }
 
+void mat4_vector3_mul(Vector3* destination, Vector3 v, Mat4 mat) {
+  for (uint i = 0; i < 3; ++i) {
+    destination->D[i] = 0.f;
+
+    for (uint j = 0; j < 4; ++j) {
+      if(j == 3)
+	destination->D[i] += mat[j * 4 + i];
+      else
+	destination->D[i] += v.D[j] * mat[j * 4 + i];
+    }
+  }
+}
+
 void mat4_mat4_mul(Mat4 destination, Mat4 a, Mat4 b) {
   for (uint i = 0; i < 4; ++i) {
     for (uint j = 0; j < 4; ++j) {
@@ -152,6 +165,12 @@ void mat4_mat4_mul(Mat4 destination, Mat4 a, Mat4 b) {
 	destination[j + i * 4] += a[i * 4 + k] * b[j + k * 4];
       }
     }
+  }
+}
+
+void vector3_apply_transform(Mat4 transform, Vector3* array, uint size) {
+  for (uint i = 0; i < size; ++i) {
+    mat4_vector3_mul(array + i, array[i], transform);
   }
 }
 
