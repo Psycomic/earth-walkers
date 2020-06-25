@@ -7,42 +7,42 @@
 #include "render.h"
 
 float shape_cube_vertices[] = {
-			 -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-			 -1.0f,-1.0f, 1.0f,
-			 -1.0f, 1.0f, 1.0f, // triangle 1 : end
-			 1.0f, 1.0f,-1.0f, // triangle 2 : begin
-			 -1.0f,-1.0f,-1.0f,
-			 -1.0f, 1.0f,-1.0f, // triangle 2 : end
-			 1.0f,-1.0f, 1.0f,
-			 -1.0f,-1.0f,-1.0f,
-			 1.0f,-1.0f,-1.0f,
-			 1.0f, 1.0f,-1.0f,
-			 1.0f,-1.0f,-1.0f,
-			 -1.0f,-1.0f,-1.0f,
-			 -1.0f,-1.0f,-1.0f,
-			 -1.0f, 1.0f, 1.0f,
-			 -1.0f, 1.0f,-1.0f,
-			 1.0f,-1.0f, 1.0f,
-			 -1.0f,-1.0f, 1.0f,
-			 -1.0f,-1.0f,-1.0f,
-			 -1.0f, 1.0f, 1.0f,
-			 -1.0f,-1.0f, 1.0f,
-			 1.0f,-1.0f, 1.0f,
-			 1.0f, 1.0f, 1.0f,
-			 1.0f,-1.0f,-1.0f,
-			 1.0f, 1.0f,-1.0f,
-			 1.0f,-1.0f,-1.0f,
-			 1.0f, 1.0f, 1.0f,
-			 1.0f,-1.0f, 1.0f,
-			 1.0f, 1.0f, 1.0f,
-			 1.0f, 1.0f,-1.0f,
-			 -1.0f, 1.0f,-1.0f,
-			 1.0f, 1.0f, 1.0f,
-			 -1.0f, 1.0f,-1.0f,
-			 -1.0f, 1.0f, 1.0f,
-			 1.0f, 1.0f, 1.0f,
-			 -1.0f, 1.0f, 1.0f,
-			 1.0f,-1.0f, 1.0f
+			       -1,-1,1,
+			       1,-1,1,
+			       1,1,1,
+			       -1,-1,1,
+			       1,1,1,
+			       -1,1,1,
+			       1,-1,1,
+			       1,-1,-1,
+			       1,1,-1,
+			       1,-1,1,
+			       1,1,-1,
+			       1,1,1,
+			       1,-1,-1,
+			       -1,-1,-1,
+			       -1,1,-1,
+			       1,-1,-1,
+			       -1,1,-1,
+			       1,1,-1,
+			       -1,-1,-1,
+			       -1,-1,1,
+			       -1,1,1,
+			       -1,-1,-1,
+			       -1,1,1,
+			       -1,1,-1,
+			       -1,1,1,
+			       1,1,1,
+			       1,1,-1,
+			       -1,1,1,
+			       1,1,-1,
+			       -1,1,-1,
+			       1,-1,1,
+			       -1,-1,-1,
+			       1,-1,-1,
+			       1,-1,1,
+			       -1,-1, 1,
+			       -1,-1,-1,
 };
 
 void camera_create_rotation_matrix(Mat4 destination, float rx, float ry) {
@@ -86,7 +86,9 @@ void drawable_create(Drawable* destination, ConvexShape* shape, Vector3* color) 
 
   destination->vertex_buffer = create_array_buffer(data_size);
   destination->color_buffer = create_array_buffer(data_size);
+
   update_array_buffer(destination->color_buffer, (float*) color, data_size);
+  update_array_buffer(destination->vertex_buffer, (float*) shape->vertices, data_size);
 }
 
 void drawable_update(Drawable* drawable, Mat4 transform) {

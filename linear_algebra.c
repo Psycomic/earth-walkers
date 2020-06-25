@@ -192,7 +192,15 @@ bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p) {
   Vector3 relative_vector;
   vector3_sub(&relative_vector, p, point);
 
-  return vector3_dot(normal, relative_vector) >= 0.f;
+  return vector3_dot(normal, relative_vector) <= 0.f;
+}
+
+void convex_shape_update_normals(ConvexShape* shape) {
+  uint i = 0;
+  for (i = 0; i < shape->vertices_size; i += 3) {
+    triangle_normal_from_vertices(shape->normals + i / 3,
+				  shape->vertices[i], shape->vertices[i + 1], shape->vertices[i + 2]);
+  }
 }
 
 void convex_shape_create(ConvexShape* shape, Vector3* vertices, uint vertices_size){
@@ -203,15 +211,11 @@ void convex_shape_create(ConvexShape* shape, Vector3* vertices, uint vertices_si
 
   shape->normals = malloc(sizeof(Vector3) * (vertices_size / 3));
 
-  uint i = 0;
-  for (i = 0; i < vertices_size; i += 3) {
-    triangle_normal_from_vertices(shape->normals + i / 3,
-				  vertices[i], vertices[i + 1], vertices[i + 2]);
-  }
+  convex_shape_update_normals(shape);
 }
 
 bool convex_shape_point_collide(ConvexShape* shape, Vector3 point) {
-  for (uint i = 0; i < shape->vertices_size; ++i) {
+  for (uint i = 0; i < shape->vertices_size; i += 3) {
     if (!triangle_point_collide(shape->normals[i / 3], shape->vertices[i], point)) {
       return 0;
     }
@@ -224,4 +228,6 @@ void convex_shape_apply_transform(ConvexShape* shape, Mat4 transform) {
   for (uint i = 0; i < shape->vertices_size; ++i) {
     mat4_vector3_mul(shape->vertices + i, shape->vertices[i], transform);
   }
+
+  convex_shape_update_normals(shape);
 }

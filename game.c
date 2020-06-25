@@ -61,8 +61,10 @@ void game_loop(GLuint program_id, GLuint matrix_id){
 
     /* Updating and drawing the cube */
     drawable_update(&cube_drawable, cube_rotation_matrix);
-
     shape_draw(&cube_drawable, program_id, camera_final_matrix, matrix_id);
+
+    /* Testing collision */
+    printf("Is colliding ? %d\n", convex_shape_point_collide(&cube_shape, camera_position));
 }
 
 void game_handle_events(GLFWwindow* window) {
