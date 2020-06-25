@@ -35,7 +35,6 @@ typedef struct
 void vector3_add(Vector3* dest, Vector3 a, Vector3 b);
 void vector3_sub(Vector3* dest, Vector3 a, Vector3 b);
 void vector3_scalar_mul(Vector3* dest, Vector3 a, float s);
-void vector3_apply_transform(Mat4 transform, Vector3* array, uint size);
 float vector3_dot(Vector3 a, Vector3 b);
 
 Mat4 mat4_allocate();
@@ -57,5 +56,6 @@ bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p);
 
 void convex_shape_create(ConvexShape* shape, Vector3* vertices, uint vertices_size);
 bool convex_shape_point_collide(ConvexShape* shape, Vector3 point);
+void convex_shape_apply_transform(ConvexShape* shape, Mat4 transform);
 
 #endif

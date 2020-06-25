@@ -28,7 +28,7 @@ ConvexShape cube_shape;
 Vector3 cube_shape_vertices[36];
 Vector3 cube_shape_color[36];
 
-GLuint cube_shape_vertex_buffer, cube_shape_fragment_buffer;
+Drawable cube_drawable;
 
 float cube_rotation_matrix[16];
 
@@ -42,13 +42,10 @@ void game_init() {
 
   convex_shape_create(&cube_shape, cube_shape_vertices, 36);
 
-  cube_shape_vertex_buffer = create_array_buffer(sizeof(cube_shape_vertices));
-  cube_shape_fragment_buffer = create_array_buffer(sizeof(cube_shape_color));
-
-  update_array_buffer(cube_shape_fragment_buffer, (float*) cube_shape_color, sizeof(cube_shape_color));
+  drawable_create(&cube_drawable, &cube_shape, cube_shape_color);
 }
 
-void game_loop() {
+void game_loop(GLuint program_id, GLuint matrix_id){
     /* Updating camera position */
     camera_create_rotation_matrix(camera_rotation_matrix, camera_rx, camera_ry);
     camera_create_final_matrix(camera_final_matrix, camera_perspective_matrix,
@@ -62,8 +59,10 @@ void game_loop() {
 
     vector3_scalar_mul(&camera_direction, camera_direction, CAMERA_SPEED);
 
-    vector3_apply_transform(cube_rotation_matrix, cube_shape.vertices, 36);
-    update_array_buffer(cube_shape_vertex_buffer, (float*) cube_shape.vertices, sizeof(shape_cube_vertices));
+    /* Updating and drawing the cube */
+    drawable_update(&cube_drawable, cube_rotation_matrix);
+
+    shape_draw(&cube_drawable, program_id, camera_final_matrix, matrix_id);
 }
 
 void game_handle_events(GLFWwindow* window) {

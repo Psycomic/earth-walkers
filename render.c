@@ -79,24 +79,36 @@ void update_array_buffer(GLuint array_buffer, float* data, uint size) {
   glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 }
 
-void shape_draw(GLuint vertex_buffer, GLuint color_buffer, GLuint program_id,
-		Mat4 camera_final_matrix, GLuint camera_matrix_id, uint vertices_number) {
+void drawable_create(Drawable* destination, ConvexShape* shape, Vector3* color) {
+  destination->shape = shape;
+
+  uint data_size = sizeof(Vector3) * shape->vertices_size;
+
+  destination->vertex_buffer = create_array_buffer(data_size);
+  destination->color_buffer = create_array_buffer(data_size);
+  update_array_buffer(destination->color_buffer, (float*) color, data_size);
+}
+
+void drawable_update(Drawable* drawable, Mat4 transform) {
+    convex_shape_apply_transform(drawable->shape, transform);
+    update_array_buffer(drawable->vertex_buffer, (float*) drawable->shape->vertices,
+			sizeof(Vector3) * drawable->shape->vertices_size);
+
+}
+
+void shape_draw(Drawable* drawable, GLuint program_id,
+		Mat4 camera_final_matrix, GLuint camera_matrix_id) {
   glUseProgram(program_id);
 
   glUniformMatrix4fv(camera_matrix_id, 1, GL_FALSE, camera_final_matrix);
 
   glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, drawable->vertex_buffer);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
   glEnableVertexAttribArray(1);
-  glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, drawable->color_buffer);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-  glDrawArrays(GL_TRIANGLES, 0, vertices_number);
-}
-
-void shape_apply_transform(ConvexShape* shape, GLuint vertex_buffer, Mat4 transform) {
-    vector3_apply_transform(transform, shape->vertices, shape->vertices_size);
-    update_array_buffer(vertex_buffer, (float*) shape->vertices, shape->vertices_size * sizeof(Vector3));
+  glDrawArrays(GL_TRIANGLES, 0, drawable->shape->vertices_size);
 }

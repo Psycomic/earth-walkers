@@ -168,12 +168,6 @@ void mat4_mat4_mul(Mat4 destination, Mat4 a, Mat4 b) {
   }
 }
 
-void vector3_apply_transform(Mat4 transform, Vector3* array, uint size) {
-  for (uint i = 0; i < size; ++i) {
-    mat4_vector3_mul(array + i, array[i], transform);
-  }
-}
-
 void mat4_print(Mat4 m) {
   for (uint i = 0; i < 4; ++i) {
     for (uint j = 0; j < 4; ++j) {
@@ -224,4 +218,10 @@ bool convex_shape_point_collide(ConvexShape* shape, Vector3 point) {
   }
 
   return 1;
+}
+
+void convex_shape_apply_transform(ConvexShape* shape, Mat4 transform) {
+  for (uint i = 0; i < shape->vertices_size; ++i) {
+    mat4_vector3_mul(shape->vertices + i, shape->vertices[i], transform);
+  }
 }
