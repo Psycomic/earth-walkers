@@ -92,9 +92,12 @@ void drawable_create(Drawable* destination, ConvexShape* shape, Vector3* color) 
 }
 
 void drawable_update(Drawable* drawable, Mat4 transform) {
+  if (transform != NULL) {
     convex_shape_apply_transform(drawable->shape, transform);
-    update_array_buffer(drawable->vertex_buffer, (float*) drawable->shape->vertices,
-			sizeof(Vector3) * drawable->shape->vertices_size);
+  }
+
+  update_array_buffer(drawable->vertex_buffer, (float*) drawable->shape->vertices,
+		      sizeof(Vector3) * drawable->shape->vertices_size);
 
 }
 

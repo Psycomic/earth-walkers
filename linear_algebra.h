@@ -29,6 +29,9 @@ typedef struct
 {
   Vector3* vertices;
   Vector3* normals;
+
+  Vector3 position;
+
   uint vertices_size;
 } ConvexShape;
 
@@ -56,6 +59,7 @@ bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p);
 
 void convex_shape_create(ConvexShape* shape, Vector3* vertices, uint vertices_size);
 bool convex_shape_point_collide(ConvexShape* shape, Vector3 point);
+bool convex_shape_shape_collide(ConvexShape* shape1, ConvexShape* shape2);
 void convex_shape_apply_transform(ConvexShape* shape, Mat4 transform);
 
 #endif

@@ -224,6 +224,22 @@ bool convex_shape_point_collide(ConvexShape* shape, Vector3 point) {
   return 1;
 }
 
+bool convex_shape_shape_collide(ConvexShape* shape1, ConvexShape* shape2) {
+  for (uint i = 0; i < shape1->vertices_size; ++i) {
+    if (convex_shape_point_collide(shape2, shape1->vertices[i])) {
+      return 1;
+    }
+  }
+
+  for (uint i = 0; i < shape2->vertices_size; ++i) {
+    if (convex_shape_point_collide(shape1, shape2->vertices[i])) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 void convex_shape_apply_transform(ConvexShape* shape, Mat4 transform) {
   for (uint i = 0; i < shape->vertices_size; ++i) {
     mat4_vector3_mul(shape->vertices + i, shape->vertices[i], transform);
