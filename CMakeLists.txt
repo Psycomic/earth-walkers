@@ -11,7 +11,6 @@ add_executable(EarthWalkers
   noise.c
   linear_algebra.c
   render.c
-  game.c
   misc.c
   main.c)
 

@@ -149,9 +149,9 @@ void mat4_vector3_mul(Vector3* destination, Vector3 v, Mat4 mat) {
 
     for (uint j = 0; j < 4; ++j) {
       if(j == 3)
-	destination->D[i] += mat[j * 4 + i];
+	destination->D[i] += mat[j + i * 4];
       else
-	destination->D[i] += v.D[j] * mat[j * 4 + i];
+	destination->D[i] += v.D[j] * mat[j + i * 4];
     }
   }
 }

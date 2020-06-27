@@ -3,6 +3,8 @@
 
 #include "misc.h"
 
+float random_float();
+
 int read_file(char* buffer, const char* filename) {
   FILE* file = fopen(filename, "r");
 
@@ -106,12 +108,8 @@ GLuint load_shaders(const char* vertex_file_path, const char* fragment_file_path
 	return ProgramID;
 }
 
-float randomf() {
-  return ((float)rand()) / RAND_MAX;
-}
-
 void random_arrayf(float* destination, uint size) {
   for (uint i = 0; i < size; ++i) {
-    destination[i] = randomf();
+    destination[i] = random_float();
   }
 }
