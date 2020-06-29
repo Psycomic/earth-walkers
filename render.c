@@ -65,35 +65,34 @@ void camera_create_final_matrix(Mat4 destination, Mat4 perspective, Mat4 rotatio
   mat4_mat4_mul(destination, temporary_matrix, perspective);
 }
 
-GLuint array_buffer_create(uint size) {
+GLuint array_buffer_create(uint size, int type, void* data) {
   GLuint array_buffer;
   glGenBuffers(1, &array_buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, array_buffer);
-  glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_STATIC_DRAW);
+  glBindBuffer(type, array_buffer);
+  glBufferData(type, size, data, GL_STATIC_DRAW);
 
   return array_buffer;
 }
 
-void array_buffer_update(GLuint array_buffer, float* data, uint size) {
+void array_buffer_update(GLuint array_buffer, void* data, uint size) {
   glBindBuffer(GL_ARRAY_BUFFER, array_buffer);
   glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 }
 
-void drawable_create(Drawable* destination, ConvexShape* shape, Vector3* color) {
+void drawable_create(Drawable* destination, Shape* shape, Vector3* color) {
   destination->shape = shape;
 
   uint data_size = sizeof(Vector3) * shape->vertices_size;
+  uint element_size = sizeof(unsigned short) * shape->indices_size;
 
-  destination->vertex_buffer = array_buffer_create(data_size);
-  destination->color_buffer = array_buffer_create(data_size);
-
-  array_buffer_update(destination->color_buffer, (float*) color, data_size);
-  array_buffer_update(destination->vertex_buffer, (float*) shape->vertices, data_size);
+  destination->vertex_buffer = array_buffer_create(data_size, GL_ARRAY_BUFFER, shape->vertices);
+  destination->color_buffer = array_buffer_create(data_size, GL_ARRAY_BUFFER, color);
+  destination->index_buffer = array_buffer_create(element_size, GL_ELEMENT_ARRAY_BUFFER, shape->indices);
 }
 
 void drawable_transform(Drawable* drawable, Mat4 transform) {
   if (transform != NULL) {
-    convex_shape_apply_transform(drawable->shape, transform);
+    shape_apply_transform(drawable->shape, transform);
   }
 
   array_buffer_update(drawable->vertex_buffer, (float*) drawable->shape->vertices,
@@ -114,5 +113,13 @@ void drawable_draw(Drawable* drawable, GLuint program_id,
   glBindBuffer(GL_ARRAY_BUFFER, drawable->color_buffer);
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-  glDrawArrays(GL_TRIANGLES, 0, drawable->shape->vertices_size);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, drawable->index_buffer);
+
+  // Draw the triangles !
+  glDrawElements(
+		 GL_TRIANGLES,      // mode
+		 drawable->shape->indices_size,    // count
+		 GL_UNSIGNED_SHORT,   // type
+		 (void*)0           // element array buffer offset
+		 );
 }

@@ -195,26 +195,38 @@ bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p) {
   return vector3_dot(normal, relative_vector) <= 0.f;
 }
 
-void convex_shape_update_normals(ConvexShape* shape) {
+void shape_update_normals(Shape* shape) {
   uint i = 0;
-  for (i = 0; i < shape->vertices_size; i += 3) {
+  for (i = 0; i < shape->indices_size; i += 3) {
     triangle_normal_from_vertices(shape->normals + i / 3,
-				  shape->vertices[i], shape->vertices[i + 1], shape->vertices[i + 2]);
+				  shape->vertices[shape->indices[i]],
+				  shape->vertices[shape->indices[i + 1]],
+				  shape->vertices[shape->indices[i + 2]]);
   }
 }
 
-void convex_shape_create(ConvexShape* shape, Vector3* vertices, uint vertices_size){
-  assert(vertices_size % 3 == 0); /* Make sure that this is an array of triangles */
-
+void shape_create(Shape* shape, Vector3* vertices, uint vertices_size,
+		  unsigned short* indices, uint indices_size){
   shape->vertices = vertices;
   shape->vertices_size = vertices_size;
 
-  shape->normals = malloc(sizeof(Vector3) * (vertices_size / 3));
+  shape->indices = indices;
+  shape->indices_size = indices_size;
 
-  convex_shape_update_normals(shape);
+  shape->normals = malloc(sizeof(Vector3) * (indices_size / 3));
+
+  shape_update_normals(shape);
 }
 
-bool convex_shape_point_collide(ConvexShape* shape, Vector3 point) {
+void shape_destroy(Shape* shape) {
+  free(shape->normals);
+
+  shape->normals = NULL;
+  shape->indices = NULL;
+  shape->vertices = NULL;
+}
+
+bool shape_point_collide_convex(Shape* shape, Vector3 point) {
   for (uint i = 0; i < shape->vertices_size; i += 3) {
     if (!triangle_point_collide(shape->normals[i / 3], shape->vertices[i], point)) {
       return 0;
@@ -224,15 +236,15 @@ bool convex_shape_point_collide(ConvexShape* shape, Vector3 point) {
   return 1;
 }
 
-bool convex_shape_shape_collide(ConvexShape* shape1, ConvexShape* shape2) {
+bool shape_shape_collide_convex(Shape* shape1, Shape* shape2) {
   for (uint i = 0; i < shape1->vertices_size; ++i) {
-    if (convex_shape_point_collide(shape2, shape1->vertices[i])) {
+    if (shape_point_collide_convex(shape2, shape1->vertices[i])) {
       return 1;
     }
   }
 
   for (uint i = 0; i < shape2->vertices_size; ++i) {
-    if (convex_shape_point_collide(shape1, shape2->vertices[i])) {
+    if (shape_point_collide_convex(shape1, shape2->vertices[i])) {
       return 1;
     }
   }
@@ -240,10 +252,10 @@ bool convex_shape_shape_collide(ConvexShape* shape1, ConvexShape* shape2) {
   return 0;
 }
 
-void convex_shape_apply_transform(ConvexShape* shape, Mat4 transform) {
+void shape_apply_transform(Shape* shape, Mat4 transform) {
   for (uint i = 0; i < shape->vertices_size; ++i) {
     mat4_vector3_mul(shape->vertices + i, shape->vertices[i], transform);
   }
 
-  convex_shape_update_normals(shape);
+  shape_update_normals(shape);
 }

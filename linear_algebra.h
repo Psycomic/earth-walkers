@@ -29,11 +29,11 @@ typedef struct
 {
   Vector3* vertices;
   Vector3* normals;
-
-  Vector3 position;
+  unsigned short* indices;
 
   uint vertices_size;
-} ConvexShape;
+  uint indices_size;
+} Shape;
 
 void vector3_add(Vector3* dest, Vector3 a, Vector3 b);
 void vector3_sub(Vector3* dest, Vector3 a, Vector3 b);
@@ -57,9 +57,11 @@ void mat4_print(Mat4 m);
 void triangle_normal_from_vertices(Vector3* n, Vector3 A, Vector3 B, Vector3 C);
 bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p);
 
-void convex_shape_create(ConvexShape* shape, Vector3* vertices, uint vertices_size);
-bool convex_shape_point_collide(ConvexShape* shape, Vector3 point);
-bool convex_shape_shape_collide(ConvexShape* shape1, ConvexShape* shape2);
-void convex_shape_apply_transform(ConvexShape* shape, Mat4 transform);
+void shape_create(Shape* shape, Vector3* vertices, uint vertices_size,
+		  unsigned short* indices, uint indices_size);
+void shape_destroy(Shape* shape);
+bool shape_point_collide_convex(Shape* shape, Vector3 point);
+bool shape_shape_collide_convex(Shape* shape1, Shape* shape2);
+void shape_apply_transform(Shape* shape, Mat4 transform);
 
 #endif

@@ -6,14 +6,19 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "linear_algebra.h"
 #include "misc.h"
 #include "render.h"
+#include "noise.h"
+#include "terrain.h"
 
 #define MOUSE_SENSIBILLITY 0.01
 #define CAMERA_SPEED 0.1f
 
-extern float shape_cube_vertices[108];
+#define NOISE_SIZE 5
+#define NOISE_OCTAVES 5
+#define NOISE_SCALE 20
+
+#define TERRAIN_SIZE ((NOISE_SIZE) * (NOISE_SCALE))
 
 int main()
 {
@@ -23,8 +28,6 @@ int main()
 
   float camera_rotation_matrix[16];
   float camera_final_matrix[16];
-
-  float rotation_matrix[16];
 
   Vector3 camera_orientation = {0.f, 0.f, 1.f};
   Vector3 camera_position = {0.f, 0.3f, -4.f};
@@ -67,31 +70,28 @@ int main()
 
   /* Creating perspective matrix */
   float camera_perspective_matrix[16];
-  mat4_create_perspective(camera_perspective_matrix, 100.f, 0.1f);
-  mat4_create_rotation_x(rotation_matrix, 0.01f);
+  mat4_create_perspective(camera_perspective_matrix, 1000.f, 0.1f);
 
-  /* Creating the ConvexShape and the Drawable object */
-  Vector3 cube1_shape_color[36];
-  random_arrayf((float*) cube1_shape_color, 108);
+  /* Creating the terrain mesh */
+  float gradient[2 * NOISE_SIZE * NOISE_SIZE * NOISE_OCTAVES];
+  noise_gradient_initialize(gradient, sizeof(gradient) / sizeof(float));
 
-  Vector3 cube1_shape_vertices[36];
-  memcpy(cube1_shape_vertices, shape_cube_vertices, sizeof(shape_cube_vertices));
+  Vector3 terrain_vertices[TERRAIN_SIZE * TERRAIN_SIZE];
+  terrain_from_octavien_noise(terrain_vertices, 50.f, 20.f,
+			      NOISE_SCALE, gradient, NOISE_OCTAVES, NOISE_SIZE, 0.5f, 0.3f);
 
-  ConvexShape cube1_shape;
-  Drawable cube1_drawable;
-  convex_shape_create(&cube1_shape, cube1_shape_vertices, 36);
-  drawable_create(&cube1_drawable, &cube1_shape, cube1_shape_color);
+  unsigned short terrain_indices[6 * (TERRAIN_SIZE - 1) * (TERRAIN_SIZE - 1)];
+  terrain_elements(terrain_indices, TERRAIN_SIZE);
 
-  Vector3 cube2_shape_color[36];
-  random_arrayf((float*) cube2_shape_color, 108);
+  Shape terrain_shape;
+  shape_create(&terrain_shape, terrain_vertices, sizeof(terrain_vertices) / sizeof(Vector3),
+	       terrain_indices, sizeof(terrain_indices) / sizeof(unsigned short));
 
-  Vector3 cube2_shape_vertices[36];
-  memcpy(cube2_shape_vertices, shape_cube_vertices, sizeof(shape_cube_vertices));
+  Vector3 terrain_color[TERRAIN_SIZE * TERRAIN_SIZE];
+  random_arrayf((float*) terrain_color, sizeof(terrain_color) / (sizeof(float)));
 
-  ConvexShape cube2_shape;
-  Drawable cube2_drawable;
-  convex_shape_create(&cube2_shape, cube2_shape_vertices, 36);
-  drawable_create(&cube2_drawable, &cube2_shape, cube2_shape_color);
+  Drawable terrain_drawable;
+  drawable_create(&terrain_drawable, &terrain_shape, terrain_color);
 
   /* Enabling depth test and linking the program */
   glEnable(GL_DEPTH_TEST);
@@ -117,14 +117,7 @@ int main()
     camera_create_final_matrix(camera_final_matrix, camera_perspective_matrix,
 			       camera_rotation_matrix, camera_position);
 
-    /* Rotating and drawing the cube */
-    drawable_transform(&cube1_drawable, rotation_matrix);
-
-    drawable_draw(&cube1_drawable, program_id, camera_final_matrix, matrix_id);
-    drawable_draw(&cube2_drawable, program_id, camera_final_matrix, matrix_id);
-
-    /* Testing collision */
-    printf("Is colliding ? %d\n", convex_shape_shape_collide(&cube1_shape, &cube2_shape));
+    drawable_draw(&terrain_drawable, program_id, camera_final_matrix, matrix_id); /* Drawing the terrain */
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -132,22 +125,10 @@ int main()
     /* Keyboard input handling */
     if (glfwGetKey(window, GLFW_KEY_W)) {
       vector3_add(&camera_position, camera_position, camera_direction);
-
-      for (uint i = 0; i < cube2_shape.vertices_size; ++i) {
-	vector3_sub(cube2_shape.vertices + i, cube2_shape.vertices[i], camera_direction);
-      }
-
-      drawable_transform(&cube2_drawable, NULL);
     }
 
     if (glfwGetKey(window, GLFW_KEY_S)) {
       vector3_sub(&camera_position, camera_position, camera_direction);
-
-      for (uint i = 0; i < cube2_shape.vertices_size; ++i) {
-	vector3_add(cube2_shape.vertices + i, cube2_shape.vertices[i], camera_direction);
-      }
-
-      drawable_transform(&cube2_drawable, NULL);
     }
 
     /* Mouse cursor handling */
