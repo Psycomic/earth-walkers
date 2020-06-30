@@ -38,37 +38,48 @@ float dot_grid_gradient(float* gradient, uint size, int ix, int iy, float x, flo
 }
 
 float noise_perlin(float* gradient, uint size, float x, float y) {
-    int x0 = (int)x;
-    int x1 = x0 + 1;
-    int y0 = (int)y;
-    int y1 = y0 + 1;
+  int x0 = (int)x;
+  int x1 = x0 + 1;
+  int y0 = (int)y;
+  int y1 = y0 + 1;
 
-    float sx = x - (float)x0;
-    float sy = y - (float)y0;
+  float sx = x - (float)x0;
+  float sy = y - (float)y0;
 
-    float n0, n1, ix0, ix1, value;
+  float n0, n1, ix0, ix1, value;
 
-    n0 = dot_grid_gradient(gradient, size, x0, y0, x, y);
-    n1 = dot_grid_gradient(gradient, size, x1, y0, x, y);
-    ix0 = lerp(n0, n1, sx);
+  n0 = dot_grid_gradient(gradient, size, x0, y0, x, y);
+  n1 = dot_grid_gradient(gradient, size, x1, y0, x, y);
+  ix0 = lerp(n0, n1, sx);
 
-    n0 = dot_grid_gradient(gradient, size, x0, y1, x, y);
-    n1 = dot_grid_gradient(gradient, size, x1, y1, x, y);
-    ix1 = lerp(n0, n1, sx);
+  n0 = dot_grid_gradient(gradient, size, x0, y1, x, y);
+  n1 = dot_grid_gradient(gradient, size, x1, y1, x, y);
+  ix1 = lerp(n0, n1, sx);
 
-    value = lerp(ix0, ix1, sy);
-    return value;
+  value = lerp(ix0, ix1, sy);
+  return value;
 }
 
-float noise_octaves_height(float* octaves, uint size,
+void noise_octaves_create(float* octaves[], uint count, uint size, float frequency) {
+  for (uint i = 0; i < count; ++i) {
+    uint octave_size = size * ((uint) powf(frequency, (float)i) + 1);
+
+    octaves[i] = malloc(sizeof(float) * octave_size * octave_size * 2);
+    noise_gradient_initialize(octaves[i], octave_size * octave_size * 2);
+  }
+}
+
+float noise_octaves_height(float* octaves[], uint size,
 			   float x, float y, float frequency, float amplitude){
   float final_height = 0.f;
 
-  for (uint i = 0; i < size; i++){
+  for (uint i = 0; i < size; i++) {
     float scale = powf(frequency, (float) i);
     float importance = powf(amplitude, (float) i);
 
-    final_height += noise_perlin(octaves + i, size, x * scale, y * scale) * importance;
+    uint octave_size = size * (uint) scale;
+
+    final_height += noise_perlin(octaves[i], octave_size, x * scale, y * scale) * importance;
   }
 
   return final_height;

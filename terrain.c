@@ -6,7 +6,7 @@
 #define index(x, y, s) (x) * (s) + (y)
 
 void terrain_from_octavien_noise(Vector3* terrain_vertices, float height, float width, uint scale,
-				 float* octaves, uint layers, uint size, float frequency, float amplitude) {
+				 float* octaves[], uint layers, uint size, float frequency, float amplitude) {
   uint real_size = size * scale;
 
   for (uint x = 0; x < size * scale; ++x) {
