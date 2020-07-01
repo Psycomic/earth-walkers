@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -9,24 +10,36 @@
 #include "misc.h"
 #include "render.h"
 #include "noise.h"
-#include "terrain.h"
 
 #define MOUSE_SENSIBILLITY 0.01
 #define CAMERA_SPEED 0.5f
 
 #define NOISE_SIZE 5
-#define NOISE_OCTAVES 5
-#define NOISE_SCALE 20
+#define NOISE_OCTAVES 6
+#define NOISE_SCALE 40
 
 #define TERRAIN_SIZE ((NOISE_SIZE) * (NOISE_SCALE))
 
-void update_terrain(Vector3* terrain_vertices, float* octaves[], Drawable* terrain_drawable,
-		    float noise_width, float noise_height, float noise_frequency) {
-      terrain_from_octavien_noise(terrain_vertices, noise_height, noise_width,
-				  NOISE_SCALE, octaves, NOISE_OCTAVES, NOISE_SIZE, noise_frequency, 0.4f);
+float lerpf(float a, float b, float w) {
+  return a + (b - a) * w;
+}
 
-      glBindBuffer(GL_ARRAY_BUFFER, terrain_drawable->vertex_buffer);
-      glBufferSubData(GL_ARRAY_BUFFER, 0, TERRAIN_SIZE * TERRAIN_SIZE * sizeof(Vector3), terrain_vertices);
+float clampf(float x, float min, float max) {
+  if (x < min)
+    return min;
+  else if (x > max)
+    return max;
+
+  return x;
+}
+
+void update_terrain(Vector3* terrain_vertices, float* octaves[], Drawable* terrain_drawable,
+		    float noise_width, float noise_height, float noise_frequency, float noise_amplitude) {
+      terrain_from_octavien_noise(terrain_vertices, noise_height, noise_width,
+				  NOISE_SCALE, octaves, NOISE_SIZE, NOISE_OCTAVES, noise_frequency, noise_amplitude);
+
+      array_buffer_update(terrain_drawable->vertex_buffer, terrain_vertices,
+			  TERRAIN_SIZE * TERRAIN_SIZE * sizeof(Vector3));
 }
 
 int main()
@@ -81,18 +94,42 @@ int main()
   float camera_perspective_matrix[16];
   mat4_create_perspective(camera_perspective_matrix, 1000.f, 0.1f);
 
-  /* Creating the terrain mesh */
-  const float noise_frequency = 2;
+  /* Initializing the noise heightmap */
+  const float noise_frequency = 1.7f;
 
   float noise_width = 15.f;
   float noise_height = 25.f;
+  float noise_amplitude = 0.4f;
 
   float* octaves[NOISE_OCTAVES];
   noise_octaves_create(octaves, NOISE_OCTAVES, NOISE_SIZE, noise_frequency);
 
+  Vector3 lower_terrain_color = {0.f, 0.f, 1.f};
+  Vector3 upper_terrain_color = {1.f, 1.f, 1.f};
+
+  Vector3* terrain_color = malloc(TERRAIN_SIZE * TERRAIN_SIZE * sizeof(Vector3));
+  for (uint x = 0; x < NOISE_SCALE * NOISE_SIZE; ++x) {
+    for (uint y = 0; y < NOISE_SCALE * NOISE_SIZE; ++y) {
+      float real_x = ((float)x) / NOISE_SCALE, real_y = ((float)y) / NOISE_SCALE;
+
+      float height_at_point = clampf((noise_octaves_height(octaves, NOISE_SIZE, NOISE_OCTAVES,
+							   real_x, real_y,
+							   noise_frequency, noise_amplitude) + 1) * 0.7f,
+				     0.f, 1.f);
+
+      terrain_color[y * TERRAIN_SIZE + x].x = lerpf(lower_terrain_color.x, upper_terrain_color.x,
+						   height_at_point);
+      terrain_color[y * TERRAIN_SIZE + x].y = lerpf(lower_terrain_color.y, upper_terrain_color.y,
+						   height_at_point);
+      terrain_color[y * TERRAIN_SIZE + x].z = lerpf(lower_terrain_color.z, upper_terrain_color.z,
+						   height_at_point);
+    }
+  }
+
+  /* Creating the terrain vertices and shape */
   Vector3* terrain_vertices = malloc(TERRAIN_SIZE * TERRAIN_SIZE * sizeof(Vector3));
   terrain_from_octavien_noise(terrain_vertices, noise_height, noise_width,
-			      NOISE_SCALE, octaves, NOISE_OCTAVES, NOISE_SIZE, noise_frequency, 0.4f);
+			      NOISE_SCALE, octaves, NOISE_SIZE, NOISE_OCTAVES, noise_frequency, noise_amplitude);
 
   unsigned short terrain_indices[6 * (TERRAIN_SIZE - 1) * (TERRAIN_SIZE - 1)];
   terrain_elements(terrain_indices, TERRAIN_SIZE);
@@ -100,9 +137,6 @@ int main()
   Shape terrain_shape;
   shape_create(&terrain_shape, terrain_vertices, TERRAIN_SIZE * TERRAIN_SIZE,
 	       terrain_indices, sizeof(terrain_indices) / sizeof(unsigned short));
-
-  Vector3 terrain_color[TERRAIN_SIZE * TERRAIN_SIZE];
-  random_arrayf((float*) terrain_color, sizeof(terrain_color) / (sizeof(float)));
 
   Drawable terrain_drawable;
   drawable_create(&terrain_drawable, &terrain_shape, terrain_color);
@@ -147,22 +181,26 @@ int main()
 
     if (glfwGetKey(window, GLFW_KEY_J)) {
       noise_width += 1.f;
-      update_terrain(terrain_vertices, octaves, &terrain_drawable, noise_width, noise_height, 2.f);
+      update_terrain(terrain_vertices, octaves, &terrain_drawable,
+		     noise_width, noise_height, noise_frequency, noise_amplitude);
     }
 
     if (glfwGetKey(window, GLFW_KEY_K)) {
       noise_width -= 1.f;
-      update_terrain(terrain_vertices, octaves, &terrain_drawable, noise_width, noise_height, 2.f);
+      update_terrain(terrain_vertices, octaves, &terrain_drawable,
+		     noise_width, noise_height, noise_frequency, noise_amplitude);
     }
 
     if (glfwGetKey(window, GLFW_KEY_H)) {
-      noise_height += 1.f;
-      update_terrain(terrain_vertices, octaves, &terrain_drawable, noise_width, noise_height, 2.f);
+      noise_amplitude += 0.01f;
+      update_terrain(terrain_vertices, octaves, &terrain_drawable,
+		     noise_width, noise_height, noise_frequency, noise_amplitude);
     }
 
     if (glfwGetKey(window, GLFW_KEY_L)) {
-      noise_height -= 1.f;
-      update_terrain(terrain_vertices, octaves, &terrain_drawable, noise_width, noise_height, 2.f);
+      noise_amplitude -= 0.01f;
+      update_terrain(terrain_vertices, octaves, &terrain_drawable,
+		     noise_width, noise_height, noise_frequency, noise_amplitude);
     }
 
     /* Mouse cursor handling */
@@ -186,7 +224,6 @@ int main()
     clock_t time_end = clock();
 
     clock_t delta = time_end - time_start;
-    printf("Took %ld miliseconds\n", delta);
   }
 
   glfwTerminate(); // Exit the program

@@ -12,7 +12,6 @@ add_executable(EarthWalkers
   linear_algebra.c
   render.c
   misc.c
-  terrain.c
   main.c)
 
 target_link_libraries(EarthWalkers PRIVATE opengl32 glew32 glfw3)

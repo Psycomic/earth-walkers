@@ -13,6 +13,8 @@ typedef struct {
 void camera_create_rotation_matrix(Mat4 destination, float rx, float ry);
 void camera_create_final_matrix(Mat4 destination, Mat4 perspective, Mat4 rotation, Vector3 position);
 
+void array_buffer_update(GLuint array_buffer, void* data, uint size);
+
 void drawable_create(Drawable* destination, Shape* shape, Vector3* color);
 void drawable_transform(Drawable* drawable, Mat4 transform);
 
