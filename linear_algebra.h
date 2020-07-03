@@ -22,7 +22,6 @@ typedef union
   float D[4];
 } Vector4;
 
-/* Colums : i, rows : j */
 typedef float* Mat4;
 
 typedef struct
@@ -34,6 +33,11 @@ typedef struct
   uint vertices_size;
   uint indices_size;
 } Shape;
+
+typedef struct {
+  short vertex_id;
+  short shape_vertex;
+} Collision;
 
 void vector3_add(Vector3* dest, Vector3 a, Vector3 b);
 void vector3_sub(Vector3* dest, Vector3 a, Vector3 b);
@@ -57,11 +61,11 @@ void mat4_print(Mat4 m);
 void triangle_normal_from_vertices(Vector3* n, Vector3 A, Vector3 B, Vector3 C);
 bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p);
 
-void shape_create(Shape* shape, Vector3* vertices, uint vertices_size,
-		  unsigned short* indices, uint indices_size);
-void shape_destroy(Shape* shape);
-bool shape_point_collide_convex(Shape* shape, Vector3 point);
-bool shape_shape_collide_convex(Shape* shape1, Shape* shape2);
-void shape_apply_transform(Shape* shape, Mat4 transform);
+void      shape_create(Shape* shape, Vector3* vertices, uint vertices_size,
+		       unsigned short* indices, uint indices_size);
+void      shape_destroy(Shape* shape);
+bool      shape_point_collide_convex(Shape* shape, Vector3 point);
+Collision shape_shape_collide_convex(Shape* shape1, Shape* shape2);
+void      shape_apply_transform(Shape* shape, Mat4 transform);
 
 #endif

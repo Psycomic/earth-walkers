@@ -236,20 +236,31 @@ bool shape_point_collide_convex(Shape* shape, Vector3 point) {
   return 1;
 }
 
-bool shape_shape_collide_convex(Shape* shape1, Shape* shape2) {
+Collision shape_shape_collide_convex(Shape* shape1, Shape* shape2) {
+  Collision result;
+
+  result.shape_vertex = -1;
+  result.vertex_id = -1;
+
   for (uint i = 0; i < shape1->vertices_size; ++i) {
     if (shape_point_collide_convex(shape2, shape1->vertices[i])) {
-      return 1;
+      result.vertex_id = i;
+      result.shape_vertex = 0;
+
+      return result;
     }
   }
 
   for (uint i = 0; i < shape2->vertices_size; ++i) {
     if (shape_point_collide_convex(shape1, shape2->vertices[i])) {
-      return 1;
+      result.vertex_id = i;
+      result.shape_vertex = 1;
+
+      return result;
     }
   }
 
-  return 0;
+  return result;
 }
 
 void shape_apply_transform(Shape* shape, Mat4 transform) {

@@ -1,49 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
 #include "render.h"
-
-float shape_cube_vertices[] = {
-			       -1,-1,1,
-			       1,-1,1,
-			       1,1,1,
-			       -1,-1,1,
-			       1,1,1,
-			       -1,1,1,
-			       1,-1,1,
-			       1,-1,-1,
-			       1,1,-1,
-			       1,-1,1,
-			       1,1,-1,
-			       1,1,1,
-			       1,-1,-1,
-			       -1,-1,-1,
-			       -1,1,-1,
-			       1,-1,-1,
-			       -1,1,-1,
-			       1,1,-1,
-			       -1,-1,-1,
-			       -1,-1,1,
-			       -1,1,1,
-			       -1,-1,-1,
-			       -1,1,1,
-			       -1,1,-1,
-			       -1,1,1,
-			       1,1,1,
-			       1,1,-1,
-			       -1,1,1,
-			       1,1,-1,
-			       -1,1,-1,
-			       1,-1,1,
-			       -1,-1,-1,
-			       1,-1,-1,
-			       1,-1,1,
-			       -1,-1, 1,
-			       -1,-1,-1,
-};
 
 void camera_create_rotation_matrix(Mat4 destination, float rx, float ry) {
   float rotation_matrix_x[16];
@@ -63,6 +21,51 @@ void camera_create_final_matrix(Mat4 destination, Mat4 perspective, Mat4 rotatio
 
   mat4_mat4_mul(temporary_matrix, translation_matrix, rotation);
   mat4_mat4_mul(destination, temporary_matrix, perspective);
+}
+
+GLFWwindow* opengl_window_create(uint width, uint height, const char* title) {
+  /* Initialize GLFW and the opengl context */
+  glewExperimental = 1;
+
+  if(!glfwInit()){
+    fprintf(stderr, "GLFW not initialized correctly !\n");
+    return NULL;
+  }
+
+  glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // We want OpenGL 3.3
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We don't want the old OpenGL
+
+  GLFWwindow* window;
+  window = glfwCreateWindow(width, height, title, NULL, NULL);
+
+  if(window == NULL) {
+    fprintf(stderr, "Failed to open GLFW window.");
+    glfwTerminate();
+
+    return NULL;
+  }
+
+  glfwMakeContextCurrent(window);
+
+  if (glewInit() != GLEW_OK) {
+    fprintf(stderr, "Failed to initialize GLEW\n");
+    glfwTerminate();
+
+    return NULL;
+  }
+
+  /* Enabling depth test and linking the program */
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+
+  GLuint VertexArrayID;
+  glGenVertexArrays(1, &VertexArrayID);
+  glBindVertexArray(VertexArrayID);
+
+  return window;
 }
 
 GLuint array_buffer_create(uint size, int type, void* data) {
@@ -90,11 +93,7 @@ void drawable_create(Drawable* destination, Shape* shape, Vector3* color) {
   destination->index_buffer = array_buffer_create(element_size, GL_ELEMENT_ARRAY_BUFFER, shape->indices);
 }
 
-void drawable_transform(Drawable* drawable, Mat4 transform) {
-  if (transform != NULL) {
-    shape_apply_transform(drawable->shape, transform);
-  }
-
+void drawable_update(Drawable* drawable) {
   array_buffer_update(drawable->vertex_buffer, (float*) drawable->shape->vertices,
 		      sizeof(Vector3) * drawable->shape->vertices_size);
 }
