@@ -22,6 +22,12 @@ void vector3_sub(Vector3* dest, Vector3 a, Vector3 b) {
   dest->z = a.z - b.z;
 }
 
+void vector3_neg(Vector3* dest) {
+  dest->x = -dest->x;
+  dest->y = -dest->y;
+  dest->z = -dest->z;
+}
+
 void vector3_scalar_mul(Vector3* dest, Vector3 a, float s) {
   dest->x = a.x * s;
   dest->y = a.y * s;
@@ -36,6 +42,14 @@ void vector3_cross(Vector3* dest, Vector3 a, Vector3 b) {
 
 float vector3_dot(Vector3 a, Vector3 b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+void vector3_normalize(Vector3* dest, Vector3 src) {
+  float magnitude = sqrtf(src.x * src.x + src.y * src.y + src.z * src.z);
+
+  dest->x = src.x / magnitude;
+  dest->y = src.y / magnitude;
+  dest->z = src.z / magnitude;
 }
 
 Mat4 mat4_allocate() {
@@ -227,8 +241,9 @@ void shape_destroy(Shape* shape) {
 }
 
 bool shape_point_collide_convex(Shape* shape, Vector3 point) {
-  for (uint i = 0; i < shape->vertices_size; i += 3) {
-    if (!triangle_point_collide(shape->normals[i / 3], shape->vertices[i], point)) {
+  for (uint i = 0; i < shape->indices_size; i += 3) {
+    if (!triangle_point_collide(shape->normals[i / 3],
+				shape->vertices[shape->indices[i]], point)) {
       return 0;
     }
   }

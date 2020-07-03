@@ -3,27 +3,43 @@
 ** Rendering
 
    I used opengl to create a debug draw of the scene.
+   There are 2 data structures I use for rendering : A Shape and a Drawable.
+
+*** Shape
+    A shape is basically a collection of vertices and normals. I use it for collision detection.
+
+*** Drawable
+    A drawable is holding a Shape pointer, an openGL vertex buffer and a openGL color buffer.
+    It can be drawn to the screen using openGL
 
 ** TODO The physics engine
 
    This is probably the longest component to create.
 
    To do:
-   + Convex collision detection
+   + Convex collision detection *DONE !*
    + Terrain collision detection
    + Collision response and physics
 
 
 *** The representation of a convex shape
 
-    The shape will be represented as all the vertices and the normal vectors of
+    The shape will be represented as all the vertices, the triangles as vertices indexes and the normal vectors of
     the faces.
 
-    Example of a cube :
+    Example of a cube shape :
 
     #+BEGIN_SRC c
     Vector3 vertices[] = {
       {-1.f, -1.f, -1.f},
       ...
     };
+
+    unsigned short cube_elements[] = {
+       0, 1, 2,
+       1, 2, 0,
+       ...
+    };
+
+    shape_create(&cube_shape, vertices, 8, cube_elements, 12);
     #+END_SRC

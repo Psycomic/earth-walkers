@@ -17,6 +17,7 @@ void camera_create_final_matrix(Mat4 destination, Mat4 perspective, Mat4 rotatio
   float translation_matrix[16];
   float temporary_matrix[16];
 
+  vector3_neg(&position);
   mat4_create_translation(translation_matrix, position);
 
   mat4_mat4_mul(temporary_matrix, translation_matrix, rotation);

@@ -35,7 +35,7 @@ int main()
   float camera_rx = 0.f, camera_ry = 0.f;
 
   Vector3 camera_direction;
-  Vector3 gravity = {0.f, -0.01f, 0.f};
+  Vector3 gravity = {0.f, 0.001f, 0.f};
 
   /* Creating the floor and the cube shapes */
   float cube_vertices[] = {
@@ -65,10 +65,10 @@ int main()
   };
 
   float floor_vertices[] = {
-			      -10.f, -5.f, -10.f,
-			      10.f,  -5.f, -10.f,
-			      -10.f, -5.f, 10.f,
-			      10.f,  -5.f, 10.f
+			      -10.f, 10.f, -10.f,
+			      10.f,  10.f, -10.f,
+			      -10.f, 10.f, 10.f,
+			      10.f,  10.f, 10.f
   };
 
   unsigned short floor_elements[] = {
@@ -132,6 +132,11 @@ int main()
     physics_body_update(&cube_body, gravity);
     drawable_update(&cube_drawable);
 
+    Collision cube_floor_collision = shape_shape_collide_convex(&cube_shape, &floor_shape);
+
+    printf("Collision : %d %d\n", cube_floor_collision.shape_vertex, cube_floor_collision.vertex_id);
+    printf("Collision : %d\n", shape_point_collide_convex(&floor_shape, camera_position));
+
     /* Drawing the scene */
     drawable_draw(&floor_drawable, program_id, camera_final_matrix, matrix_id);
     drawable_draw(&cube_drawable, program_id, camera_final_matrix, matrix_id);
@@ -141,10 +146,10 @@ int main()
 
     /* Keyboard input handling */
     if (glfwGetKey(window, GLFW_KEY_W))
-      vector3_add(&camera_position, camera_position, camera_direction);
+      vector3_sub(&camera_position, camera_position, camera_direction);
 
     if (glfwGetKey(window, GLFW_KEY_S))
-      vector3_sub(&camera_position, camera_position, camera_direction);
+      vector3_add(&camera_position, camera_position, camera_direction);
 
     /* Mouse cursor handling */
     {

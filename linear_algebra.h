@@ -41,6 +41,7 @@ typedef struct {
 
 void vector3_add(Vector3* dest, Vector3 a, Vector3 b);
 void vector3_sub(Vector3* dest, Vector3 a, Vector3 b);
+void vector3_neg(Vector3* dest);
 void vector3_scalar_mul(Vector3* dest, Vector3 a, float s);
 float vector3_dot(Vector3 a, Vector3 b);
 
