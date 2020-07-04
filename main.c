@@ -87,6 +87,9 @@ int main()
   shape_create(&floor_shape, (Vector3*) floor_vertices, sizeof(floor_vertices) / (sizeof(Vector3)),
 	       floor_elements, sizeof(floor_elements) / sizeof(unsigned short));
 
+  PhysicBody floor_body;
+  physics_body_create(&floor_body, &floor_shape, 3.f);
+
   /* Creating a window and initialize an opengl context */
   GLFWwindow* window = opengl_window_create(800, 800, "Hello world");
 
@@ -132,10 +135,12 @@ int main()
     physics_body_update(&cube_body, gravity);
     drawable_update(&cube_drawable);
 
-    Collision cube_floor_collision = shape_shape_collide_convex(&cube_shape, &floor_shape);
+    Vector3 no_gravity = {0.f, 0.f, 0.f};
+    physics_body_update(&floor_body, no_gravity);
+    drawable_update(&floor_drawable);
 
-    printf("Collision : %d %d\n", cube_floor_collision.shape_vertex, cube_floor_collision.vertex_id);
-    printf("Collision : %d\n", shape_point_collide_convex(&floor_shape, camera_position));
+    Collision cube_floor_collision = shape_shape_collide_convex(&floor_shape, &cube_shape);
+    physics_body_solve_collision(&floor_body, &cube_body, cube_floor_collision);
 
     /* Drawing the scene */
     drawable_draw(&floor_drawable, program_id, camera_final_matrix, matrix_id);

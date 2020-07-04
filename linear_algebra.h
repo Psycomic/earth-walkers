@@ -44,6 +44,7 @@ void vector3_sub(Vector3* dest, Vector3 a, Vector3 b);
 void vector3_neg(Vector3* dest);
 void vector3_scalar_mul(Vector3* dest, Vector3 a, float s);
 float vector3_dot(Vector3 a, Vector3 b);
+void vector3_normalize(Vector3* dest, Vector3 src);
 
 Mat4 mat4_allocate();
 void mat4_create_translation(Mat4 destination, Vector3 direction);
@@ -62,11 +63,13 @@ void mat4_print(Mat4 m);
 void triangle_normal_from_vertices(Vector3* n, Vector3 A, Vector3 B, Vector3 C);
 bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p);
 
-void      shape_create(Shape* shape, Vector3* vertices, uint vertices_size,
+void shape_create(Shape* shape, Vector3* vertices, uint vertices_size,
 		       unsigned short* indices, uint indices_size);
-void      shape_destroy(Shape* shape);
-bool      shape_point_collide_convex(Shape* shape, Vector3 point);
+void shape_destroy(Shape* shape);
+void shape_apply_transform(Shape* shape, Mat4 transform);
+
+bool shape_point_collide_convex(Shape* shape, Vector3 point);
 Collision shape_shape_collide_convex(Shape* shape1, Shape* shape2);
-void      shape_apply_transform(Shape* shape, Mat4 transform);
+Vector3 shape_collision_normal(Shape* shape, Vector3 point);
 
 #endif

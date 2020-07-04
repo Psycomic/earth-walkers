@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <float.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,8 +45,12 @@ float vector3_dot(Vector3 a, Vector3 b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
+float vector3_magnitude(Vector3 a) {
+  return sqrtf(a.x * a.x + a.y * a.y + a.z * a.z);
+}
+
 void vector3_normalize(Vector3* dest, Vector3 src) {
-  float magnitude = sqrtf(src.x * src.x + src.y * src.y + src.z * src.z);
+  float magnitude = vector3_magnitude(src);
 
   dest->x = src.x / magnitude;
   dest->y = src.y / magnitude;
@@ -276,6 +281,26 @@ Collision shape_shape_collide_convex(Shape* shape1, Shape* shape2) {
   }
 
   return result;
+}
+
+Vector3 shape_collision_normal(Shape* shape, Vector3 point) {
+  float min_distance = FLT_MAX;
+  uint min_normal_id;
+
+  for (uint i = 0; i < shape->indices_size; i += 3) {
+    Vector3 distance_vector;
+    vector3_sub(&distance_vector, point,
+		shape->vertices[shape->indices[i]]);
+
+    float distance = vector3_magnitude(distance_vector);
+
+    if (distance < min_distance) {
+      min_distance = distance;
+      min_normal_id = i / 3;
+    }
+  }
+
+  return shape->normals[min_normal_id];
 }
 
 void shape_apply_transform(Shape* shape, Mat4 transform) {

@@ -19,3 +19,53 @@ void physics_body_update(PhysicBody* body, Vector3 force) {
   for (uint i = 0; i < body->shape->vertices_size; ++i)
     vector3_add(body->shape->vertices + i, body->shape->vertices[i], body->velocity);
 }
+
+void physics_body_solve_collision(PhysicBody* body1, PhysicBody* body2, Collision collision) {
+    if (collision.vertex_id == -1) {
+      return;
+    }
+
+    Vector3 collision_normal;
+
+    printf("Hey you !\n");
+
+    printf("Body %d : vertex %d\n", collision.shape_vertex, collision.vertex_id);
+
+    if (collision.shape_vertex == 0)
+      collision_normal = shape_collision_normal(body2->shape,
+						body1->shape->vertices[collision.vertex_id]);
+    if (collision.shape_vertex == 1)
+      collision_normal = shape_collision_normal(body1->shape,
+						body2->shape->vertices[collision.vertex_id]);
+
+    printf("Hey you !\n");
+
+    vector3_normalize(&collision_normal, collision_normal);
+
+    if (collision.shape_vertex == 0)
+      collision_normal = shape_collision_normal(body2->shape, body1->shape->vertices[collision.vertex_id]);
+    else
+      collision_normal = shape_collision_normal(body2->shape, body1->shape->vertices[collision.vertex_id]);
+
+    Vector3 relative_velocity;
+    vector3_sub(&relative_velocity, body1->velocity, body2->velocity);
+
+    float vel_along_normal = vector3_dot(relative_velocity, collision_normal);
+
+    if(vel_along_normal > 0)
+      return;
+
+    const float restitution = 1.f;
+    const float j = (-(1 + restitution) * vel_along_normal) / (body1->mass_inv + body2->mass_inv);
+
+    Vector3 impulse;
+    vector3_scalar_mul(&impulse, collision_normal, j);
+
+    Vector3 impulse_body1;
+    Vector3 impulse_body2;
+    vector3_scalar_mul(&impulse_body1, impulse, body1->mass_inv);
+    vector3_scalar_mul(&impulse_body2, impulse, body2->mass_inv);
+
+    vector3_add(&body1->velocity, body1->velocity, impulse_body1);
+    vector3_sub(&body2->velocity, body2->velocity, impulse_body2);
+}
