@@ -4,7 +4,11 @@
 
 void physics_body_create(PhysicBody* body, Shape* shape, float mass) {
   body->shape = shape;
-  body->mass_inv = 1.f / mass;
+
+  if (mass == 0.f)
+    body->mass_inv = 0.f;
+  else
+    body->mass_inv = 1.f / mass;
 
   body->velocity.x = 0.f;
   body->velocity.y = 0.f;
@@ -27,10 +31,6 @@ void physics_body_solve_collision(PhysicBody* body1, PhysicBody* body2, Collisio
 
     Vector3 collision_normal;
 
-    printf("Hey you !\n");
-
-    printf("Body %d : vertex %d\n", collision.shape_vertex, collision.vertex_id);
-
     if (collision.shape_vertex == 0)
       collision_normal = shape_collision_normal(body2->shape,
 						body1->shape->vertices[collision.vertex_id]);
@@ -38,21 +38,14 @@ void physics_body_solve_collision(PhysicBody* body1, PhysicBody* body2, Collisio
       collision_normal = shape_collision_normal(body1->shape,
 						body2->shape->vertices[collision.vertex_id]);
 
-    printf("Hey you !\n");
-
     vector3_normalize(&collision_normal, collision_normal);
-
-    if (collision.shape_vertex == 0)
-      collision_normal = shape_collision_normal(body2->shape, body1->shape->vertices[collision.vertex_id]);
-    else
-      collision_normal = shape_collision_normal(body2->shape, body1->shape->vertices[collision.vertex_id]);
 
     Vector3 relative_velocity;
     vector3_sub(&relative_velocity, body1->velocity, body2->velocity);
 
     float vel_along_normal = vector3_dot(relative_velocity, collision_normal);
 
-    if(vel_along_normal > 0)
+    if(vel_along_normal < 0)
       return;
 
     const float restitution = 1.f;
@@ -68,4 +61,10 @@ void physics_body_solve_collision(PhysicBody* body1, PhysicBody* body2, Collisio
 
     vector3_add(&body1->velocity, body1->velocity, impulse_body1);
     vector3_sub(&body2->velocity, body2->velocity, impulse_body2);
+
+    /* const float percent = 0.2; // usually 20% to 80% */
+    /* Vector3 correction = (penetrationDepth / (A.inv_mass + B.inv_mass)) * percent * n; */
+
+    /* A.position -= A.inv_mass * correction; */
+    /* B.position += B.inv_mass * correction; */
 }

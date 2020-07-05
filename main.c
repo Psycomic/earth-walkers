@@ -35,7 +35,9 @@ int main()
   float camera_rx = 0.f, camera_ry = 0.f;
 
   Vector3 camera_direction;
-  Vector3 gravity = {0.f, 0.001f, 0.f};
+
+  Vector3 gravity = {0.f, -0.01f, 0.f};
+  Vector3 no_gravity = {0.f, 0.f, 0.f};
 
   /* Creating the floor and the cube shapes */
   float cube_vertices[] = {
@@ -65,15 +67,15 @@ int main()
   };
 
   float floor_vertices[] = {
-			      -10.f, 10.f, -10.f,
-			      10.f,  10.f, -10.f,
-			      -10.f, 10.f, 10.f,
-			      10.f,  10.f, 10.f
+			      -10.f, -10.f, -10.f,
+			      10.f,  -10.f, -10.f,
+			      -10.f, -10.f, 10.f,
+			      10.f,  -10.f, 10.f
   };
 
   unsigned short floor_elements[] = {
-					  0, 1, 2,
-					  2, 1, 3
+					  2, 1, 0,
+					  3, 1, 2
   };
 
   Shape cube_shape;
@@ -88,7 +90,7 @@ int main()
 	       floor_elements, sizeof(floor_elements) / sizeof(unsigned short));
 
   PhysicBody floor_body;
-  physics_body_create(&floor_body, &floor_shape, 3.f);
+  physics_body_create(&floor_body, &floor_shape, 0.f);
 
   /* Creating a window and initialize an opengl context */
   GLFWwindow* window = opengl_window_create(800, 800, "Hello world");
@@ -135,7 +137,6 @@ int main()
     physics_body_update(&cube_body, gravity);
     drawable_update(&cube_drawable);
 
-    Vector3 no_gravity = {0.f, 0.f, 0.f};
     physics_body_update(&floor_body, no_gravity);
     drawable_update(&floor_drawable);
 
