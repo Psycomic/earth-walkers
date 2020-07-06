@@ -61,7 +61,7 @@ void mat4_vector3_mul(Vector3* destination, Vector3 v, Mat4 mat);
 void mat4_print(Mat4 m);
 
 void triangle_normal_from_vertices(Vector3* n, Vector3 A, Vector3 B, Vector3 C);
-bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p);
+float triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p);
 
 void shape_create(Shape* shape, Vector3* vertices, uint vertices_size,
 		       unsigned short* indices, uint indices_size);
@@ -70,6 +70,6 @@ void shape_apply_transform(Shape* shape, Mat4 transform);
 
 bool shape_point_collide_convex(Shape* shape, Vector3 point);
 Collision shape_shape_collide_convex(Shape* shape1, Shape* shape2);
-Vector3 shape_collision_normal(Shape* shape, Vector3 point);
+uint shape_collision_normal(Shape* shape, Vector3 point);
 
 #endif

@@ -207,11 +207,11 @@ void triangle_normal_from_vertices(Vector3* n, Vector3 A, Vector3 B, Vector3 C) 
   vector3_cross(n, triangle_edge1, triangle_edge2);
 }
 
-bool triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p) {
+float triangle_point_collide(Vector3 normal, Vector3 point, Vector3 p) {
   Vector3 relative_vector;
   vector3_sub(&relative_vector, p, point);
 
-  return vector3_dot(normal, relative_vector) <= 0.f;
+  return vector3_dot(normal, relative_vector);
 }
 
 void shape_update_normals(Shape* shape) {
@@ -247,8 +247,8 @@ void shape_destroy(Shape* shape) {
 
 bool shape_point_collide_convex(Shape* shape, Vector3 point) {
   for (uint i = 0; i < shape->indices_size; i += 3) {
-    if (!triangle_point_collide(shape->normals[i / 3],
-				shape->vertices[shape->indices[i]], point)) {
+    if (!(triangle_point_collide(shape->normals[i / 3],
+				 shape->vertices[shape->indices[i]], point) <= 0.f)) {
       return 0;
     }
   }
@@ -283,7 +283,7 @@ Collision shape_shape_collide_convex(Shape* shape1, Shape* shape2) {
   return result;
 }
 
-Vector3 shape_collision_normal(Shape* shape, Vector3 point) {
+uint shape_collision_normal(Shape* shape, Vector3 point) {
   float min_distance = FLT_MAX;
   uint min_normal_id;
 
@@ -300,7 +300,7 @@ Vector3 shape_collision_normal(Shape* shape, Vector3 point) {
     }
   }
 
-  return shape->normals[min_normal_id];
+  return min_normal_id;
 }
 
 void shape_apply_transform(Shape* shape, Mat4 transform) {

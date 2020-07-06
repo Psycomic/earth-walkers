@@ -36,8 +36,9 @@ int main()
 
   Vector3 camera_direction;
 
-  Vector3 gravity = {0.f, -0.01f, 0.f};
-  Vector3 no_gravity = {0.f, 0.f, 0.f};
+  Vector3 gravity = {0.f, -0.001f, 0.f};
+
+  Vector3 cube_direction = {0.f, 0.f, 0.f};
 
   /* Creating the floor and the cube shapes */
   float cube_vertices[] = {
@@ -78,37 +79,45 @@ int main()
 					  3, 1, 2
   };
 
+  float rotation_matrix[16];
+  mat4_create_rotation_x(rotation_matrix, 0.1f);
+
+  World world;
+  world_create(&world, gravity);
+
   Shape cube_shape;
   shape_create(&cube_shape, (Vector3*) cube_vertices, sizeof(cube_vertices) / (sizeof(Vector3)),
 	       cube_elements, sizeof(cube_elements) / sizeof(unsigned short));
-
-  PhysicBody cube_body;
-  physics_body_create(&cube_body, &cube_shape, 1.f);
 
   Shape floor_shape;
   shape_create(&floor_shape, (Vector3*) floor_vertices, sizeof(floor_vertices) / (sizeof(Vector3)),
 	       floor_elements, sizeof(floor_elements) / sizeof(unsigned short));
 
-  PhysicBody floor_body;
-  physics_body_create(&floor_body, &floor_shape, 0.f);
+  /* shape_apply_transform(&floor_shape, rotation_matrix); */
+
+  PhysicBody* cube_body = world_body_add(&world, &cube_shape, 1.f);
+  PhysicBody* floor_body = world_body_add(&world, &floor_shape, 0.f);
 
   /* Creating a window and initialize an opengl context */
   GLFWwindow* window = opengl_window_create(800, 800, "Hello world");
 
-  Vector3 cube_color[8];
-  random_arrayf((float*)cube_color, 8 * 3);
 
   Drawable cube_drawable;
+  Drawable floor_drawable;
+
+  Vector3 cube_color[8];
+  Vector3 floor_color[4];
+
+  random_arrayf((float*)cube_color, 8 * 3);
+
   drawable_create(&cube_drawable, &cube_shape, cube_color);
 
-  Vector3 floor_color[4];
   for (uint i = 0; i < 4; ++i) {
     floor_color[i].x = 1.f - ((float)i) / 4;
     floor_color[i].y = ((float)i) / 4;
     floor_color[i].z = 0.f;
   }
 
-  Drawable floor_drawable;
   drawable_create(&floor_drawable, &floor_shape, floor_color);
 
   /* Creating perspective matrix */
@@ -120,6 +129,14 @@ int main()
 
   while(!glfwWindowShouldClose(window)) {
     clock_t time_start = clock();
+
+    int width, height;
+    float ratio;
+
+    glfwGetFramebufferSize(window, &width, &height);
+    ratio = width / (float) height;
+
+    glViewport(0, 0, width, height);
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clearing the screen (color: white)
@@ -134,14 +151,22 @@ int main()
 			       camera_rotation_matrix, camera_position);
 
     /* Updating the cube body */
-    physics_body_update(&cube_body, gravity);
-    drawable_update(&cube_drawable);
+    Vector3 cube_force;
+    vector3_add(&cube_force, gravity, cube_direction);
 
-    physics_body_update(&floor_body, no_gravity);
+    physics_body_apply_force(cube_body, cube_force);
+
+    world_update(&world);
+
+    drawable_update(&cube_drawable);
     drawable_update(&floor_drawable);
 
+    cube_direction.x = 0.f;
+    cube_direction.y = 0.f;
+    cube_direction.z = 0.f;
+
     Collision cube_floor_collision = shape_shape_collide_convex(&floor_shape, &cube_shape);
-    physics_body_solve_collision(&floor_body, &cube_body, cube_floor_collision);
+    physics_body_solve_collision(floor_body, cube_body, cube_floor_collision);
 
     /* Drawing the scene */
     drawable_draw(&floor_drawable, program_id, camera_final_matrix, matrix_id);
@@ -156,6 +181,12 @@ int main()
 
     if (glfwGetKey(window, GLFW_KEY_S))
       vector3_add(&camera_position, camera_position, camera_direction);
+
+    if (glfwGetKey(window, GLFW_KEY_J))
+      cube_direction.x = 0.01f;
+
+    if (glfwGetKey(window, GLFW_KEY_K))
+      cube_direction.x = -0.01f;
 
     /* Mouse cursor handling */
     {
@@ -178,6 +209,7 @@ int main()
     clock_t time_end = clock();
 
     clock_t delta = time_end - time_start;
+    printf("Time elapsed : %ld\n", delta);
   }
 
   glfwTerminate(); // Exit the program

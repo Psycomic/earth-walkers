@@ -58,6 +58,9 @@ GLFWwindow* opengl_window_create(uint width, uint height, const char* title) {
     return NULL;
   }
 
+  /* Disable double buffering */
+  glfwSwapInterval(0);
+
   /* Enabling depth test and linking the program */
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
